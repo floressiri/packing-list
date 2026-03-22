@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>🌴 Port St. Joe Packing</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a1a1a; min-height: 100vh; }
+
+  /* HEADER */
+  .header { background: linear-gradient(135deg, #0ea5e9 0%, #14b8a6 100%); color: white; padding: 20px 16px 18px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .header h1 { font-size: 19px; font-weight: 700; letter-spacing: -0.3px; }
+  .header-sub { font-size: 11px; opacity: 0.8; margin-top: 2px; }
+  .reset-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.35); color: white; font-size: 11px; padding: 5px 10px; border-radius: 8px; cursor: pointer; flex-shrink: 0; }
+  .weather-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .weather-pill { background: rgba(255,255,255,0.18); border-radius: 10px; padding: 7px 10px; }
+  .weather-pill .wlabel { font-size: 11px; font-weight: 600; }
+  .weather-pill .wval { font-size: 10px; opacity: 0.85; margin-top: 1px; }
+  .prog-label { display: flex; justify-content: space-between; font-size: 11px; opacity: 0.85; margin-bottom: 5px; }
+  .prog-track { background: rgba(255,255,255,0.28); border-radius: 99px; height: 9px; overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 99px; background: white; transition: width 0.4s ease; }
+
+  /* TABS */
+  .tabs { display: flex; background: white; border-bottom: 1px solid #e2e8f0; overflow-x: auto; position: sticky; top: 160px; z-index: 99; box-shadow: 0 1px 4px rgba(0,0,0,0.06); -webkit-overflow-scrolling: touch; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { flex-shrink: 0; padding: 12px 14px; font-size: 13px; font-weight: 500; color: #64748b; border-bottom: 2.5px solid transparent; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+  .tab.active { color: #0ea5e9; border-bottom-color: #0ea5e9; background: #f0f9ff; }
+  .tab .done-dot { color: #22c55e; font-size: 10px; margin-left: 3px; }
+
+  /* CONTENT */
+  .content { padding: 14px; max-width: 680px; margin: 0 auto; padding-bottom: 40px; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* CARDS */
+  .bag-header { border-radius: 14px; padding: 14px 16px; border: 1.5px solid; margin-bottom: 14px; }
+  .bag-header h2 { font-size: 16px; font-weight: 700; color: #1e293b; }
+  .bag-header p { font-size: 12px; color: #64748b; margin-top: 2px; }
+  .bag-header .bag-prog { margin-top: 10px; }
+  .bag-header .bag-prog-label { display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; margin-bottom: 4px; }
+  .bag-header .bag-prog-track { background: #e2e8f0; border-radius: 99px; height: 7px; overflow: hidden; }
+  .bag-header .bag-prog-fill { height: 100%; border-radius: 99px; transition: width 0.4s ease; }
+  .bag-header .all-done-badge { font-size: 22px; float: right; margin-top: -2px; }
+
+  .category { background: white; border-radius: 12px; border: 1px solid #e8edf3; margin-bottom: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .cat-header { padding: 10px 14px; background: #f8fafc; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: flex-start; }
+  .cat-title { font-size: 13px; font-weight: 600; color: #374151; }
+  .cat-note { font-size: 11px; color: #94a3b8; margin-top: 2px; line-height: 1.4; }
+  .cat-done { font-size: 11px; font-weight: 600; color: #22c55e; flex-shrink: 0; margin-left: 8px; margin-top: 1px; }
+  .cat-items { padding: 6px 0; }
+
+  .item-row { display: flex; align-items: center; gap: 12px; padding: 9px 14px; cursor: pointer; transition: background 0.15s; }
+  .item-row:active { background: #f8fafc; }
+  .item-row input[type="checkbox"] { width: 18px; height: 18px; border-radius: 5px; flex-shrink: 0; cursor: pointer; accent-color: #0ea5e9; }
+  .item-row.green input { accent-color: #22c55e; }
+  .item-row.purple input { accent-color: #a855f7; }
+  .item-label { font-size: 14px; color: #374151; line-height: 1.3; transition: all 0.2s; }
+  .item-row.checked .item-label { text-decoration: line-through; color: #c0ccd8; }
+
+  /* OUTFIT CARDS */
+  .outfit-card { border-radius: 14px; overflow: hidden; border: 1.5px solid; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .outfit-card.done { opacity: 0.75; }
+  .outfit-header { padding: 14px 16px; }
+  .outfit-header h3 { font-size: 14px; font-weight: 700; color: #1e293b; }
+  .outfit-weather { font-size: 11px; margin-top: 2px; font-weight: 500; }
+  .outfit-tip { background: rgba(255,255,255,0.55); border-radius: 8px; padding: 8px 10px; margin-top: 8px; font-size: 11px; color: #475569; font-style: italic; line-height: 1.4; }
+  .outfit-prog { margin-top: 8px; }
+  .outfit-prog-label { display: flex; justify-content: space-between; font-size: 10px; color: rgba(0,0,0,0.35); margin-bottom: 3px; }
+  .outfit-prog-track { border-radius: 99px; height: 6px; overflow: hidden; background: rgba(0,0,0,0.1); }
+  .outfit-prog-fill { height: 100%; border-radius: 99px; transition: width 0.4s ease; }
+  .outfit-items { background: white; padding: 6px 0; }
+
+  .info-banner { background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 12px; padding: 11px 13px; margin-bottom: 14px; font-size: 12px; color: #92400e; line-height: 1.5; }
+  .info-banner strong { font-weight: 700; }
+
+  /* COLORS */
+  .sky-bg { background: #f0f9ff; border-color: #bae6fd; }
+  .sky-text { color: #0369a1; }
+  .sky-fill { background: #38bdf8; }
+  .indigo-bg { background: #eef2ff; border-color: #c7d2fe; }
+  .indigo-text { color: #4338ca; }
+  .indigo-fill { background: #818cf8; }
+  .green-bg { background: #f0fdf4; border-color: #bbf7d0; }
+  .green-fill { background: #22c55e; }
+  .blue-bg { background: #eff6ff; border-color: #bfdbfe; }
+  .blue-fill { background: #3b82f6; }
+  .purple-bg { background: #faf5ff; border-color: #e9d5ff; }
+  .purple-fill { background: #a855f7; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <h1>🌴 Port St. Joe Packing</h1>
+      <div class="header-sub">March 23–27, 2026 · Family Trip</div>
+    </div>
+    <button class="reset-btn" onclick="resetAll()">Reset All</button>
+  </div>
+  <div class="weather-row">
+    <div class="weather-pill"><div class="wlabel">☀️ Florida</div><div class="wval">77–82°F, sunny</div></div>
+    <div class="weather-pill"><div class="wlabel">🧥 MKE Friday</div><div class="wval">~40°F, overcast</div></div>
+  </div>
+  <div class="prog-label"><span>Overall progress</span><span id="overall-label">0 / 0 packed</span></div>
+  <div class="prog-track"><div class="prog-fill" id="overall-fill" style="width:0%"></div></div>
+</div>
+
+<div class="tabs" id="tabs">
+  <div class="tab active" onclick="showTab('outfits')" id="tab-outfits">✈️ Outfits</div>
+  <div class="tab" onclick="showTab('duffle')" id="tab-duffle">🟢 Duffle</div>
+  <div class="tab" onclick="showTab('backpack')" id="tab-backpack">🔵 Backpack</div>
+  <div class="tab" onclick="showTab('suitcase')" id="tab-suitcase">🟣 Suitcase</div>
+</div>
+
+<div class="content">
+
+  <!-- ===================== OUTFITS ===================== -->
+  <div class="section active" id="section-outfits">
+    <div class="info-banner">💡 <strong>These are worn on your body — not packed in any bag.</strong> Check them off as you lay them out the night before.</div>
+
+    <!-- Monday -->
+    <div class="outfit-card sky-bg" id="outfit-monday">
+      <div class="outfit-header sky-bg">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <h3>Monday 3/23 — To Florida ✈️</h3>
+            <div class="outfit-weather sky-text">❄️ Cold leaving MKE → ☀️ Warm arriving FL</div>
+          </div>
+          <span id="done-monday" style="display:none;font-size:20px">✅</span>
+        </div>
+        <div class="outfit-tip">📌 Hoodie = plane layer, tie around your waist when you land. Lay this out TONIGHT before you leave for grandma's!</div>
+        <div class="outfit-prog">
+          <div class="outfit-prog-label"><span id="lbl-monday">0/7</span><span id="pct-monday">0%</span></div>
+          <div class="outfit-prog-track"><div class="outfit-prog-fill sky-fill" id="fill-monday" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="outfit-items">
+        <label class="item-row" id="row-mo1"><input type="checkbox" id="mo1" onchange="tick('mo1')"><span class="item-label">Biker shorts #1</span></label>
+        <label class="item-row" id="row-mo2"><input type="checkbox" id="mo2" onchange="tick('mo2')"><span class="item-label">Oversized hoodie</span></label>
+        <label class="item-row" id="row-mo3"><input type="checkbox" id="mo3" onchange="tick('mo3')"><span class="item-label">Tennis shoes</span></label>
+        <label class="item-row" id="row-mo4"><input type="checkbox" id="mo4" onchange="tick('mo4')"><span class="item-label">Socks</span></label>
+        <label class="item-row" id="row-mo5"><input type="checkbox" id="mo5" onchange="tick('mo5')"><span class="item-label">Sports bra</span></label>
+        <label class="item-row" id="row-mo6"><input type="checkbox" id="mo6" onchange="tick('mo6')"><span class="item-label">Underwear</span></label>
+        <label class="item-row" id="row-mo7"><input type="checkbox" id="mo7" onchange="tick('mo7')"><span class="item-label">Sunglasses on your face! 😎</span></label>
+      </div>
+    </div>
+
+    <!-- Friday -->
+    <div class="outfit-card indigo-bg" id="outfit-friday">
+      <div class="outfit-header indigo-bg">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <h3>Friday 3/27 — Home 🏠</h3>
+            <div class="outfit-weather indigo-text">☀️ Leaving warm FL → ❄️ Arriving cold MKE</div>
+          </div>
+          <span id="done-friday" style="display:none;font-size:20px">✅</span>
+        </div>
+        <div class="outfit-tip">⚠️ 7:20am departure = leave rental by 4:45am. LAY THIS OUT THURSDAY NIGHT. Do not think about this Friday morning.</div>
+        <div class="outfit-prog">
+          <div class="outfit-prog-label"><span id="lbl-friday">0/7</span><span id="pct-friday">0%</span></div>
+          <div class="outfit-prog-track"><div class="outfit-prog-fill indigo-fill" id="fill-friday" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="outfit-items">
+        <label class="item-row" id="row-fr1"><input type="checkbox" id="fr1" onchange="tick('fr1')"><span class="item-label">Yoga pants</span></label>
+        <label class="item-row" id="row-fr2"><input type="checkbox" id="fr2" onchange="tick('fr2')"><span class="item-label">Green long sleeve shirt</span></label>
+        <label class="item-row" id="row-fr3"><input type="checkbox" id="fr3" onchange="tick('fr3')"><span class="item-label">Packable jacket</span></label>
+        <label class="item-row" id="row-fr4"><input type="checkbox" id="fr4" onchange="tick('fr4')"><span class="item-label">Tennis shoes (same pair from Monday)</span></label>
+        <label class="item-row" id="row-fr5"><input type="checkbox" id="fr5" onchange="tick('fr5')"><span class="item-label">Socks</span></label>
+        <label class="item-row" id="row-fr6"><input type="checkbox" id="fr6" onchange="tick('fr6')"><span class="item-label">Regular bra</span></label>
+        <label class="item-row" id="row-fr7"><input type="checkbox" id="fr7" onchange="tick('fr7')"><span class="item-label">Underwear</span></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== DUFFLE ===================== -->
+  <div class="section" id="section-duffle">
+    <div class="bag-header green-bg">
+      <div style="display:flex;justify-content:space-between">
+        <div>
+          <h2>🟢 Patagonia 55L Duffle</h2>
+          <p>Tonight at Grandma's ONLY — stays behind when you leave!</p>
+          <p style="margin-top:4px;font-size:11px;color:#64748b">Suitcase stays in the car. Backpack comes inside to charge.</p>
+        </div>
+        <span id="done-duffle" style="display:none" class="all-done-badge">✅</span>
+      </div>
+      <div class="bag-prog">
+        <div class="bag-prog-label"><span id="lbl-duffle">0 / 0 items</span><span id="pct-duffle">0%</span></div>
+        <div class="bag-prog-track"><div class="bag-prog-fill green-fill" id="fill-duffle" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="category">
+      <div class="cat-header"><div><div class="cat-title">🛏️ Tonight's Sleep</div></div><div class="cat-done" id="catdone-d1"></div></div>
+      <div class="cat-items">
+        <label class="item-row green" id="row-d1"><input type="checkbox" id="d1" onchange="tick('d1')"><span class="item-label">Sleep tshirt #1 (grandma's only — does NOT go to FL)</span></label>
+        <label class="item-row green" id="row-d2"><input type="checkbox" id="d2" onchange="tick('d2')"><span class="item-label">Underwear for tonight</span></label>
+        <label class="item-row green" id="row-d3"><input type="checkbox" id="d3" onchange="tick('d3')"><span class="item-label">Sleep shorts (just in case)</span></label>
+        <label class="item-row green" id="row-d4"><input type="checkbox" id="d4" onchange="tick('d4')"><span class="item-label">Pillow 🛑 STAYS IN DUFFLE — does not go to FL</span></label>
+        <label class="item-row green" id="row-d5"><input type="checkbox" id="d5" onchange="tick('d5')"><span class="item-label">Kindle</span></label>
+      </div>
+    </div>
+
+    <div class="category">
+      <div class="cat-header"><div><div class="cat-title">😴 Sleep Routine</div><div class="cat-note">Use tonight → transfer to suitcase sleep cube Monday morning</div></div><div class="cat-done" id="catdone-d2"></div></div>
+      <div class="cat-items">
+        <label class="item-row green" id="row-d6"><input type="checkbox" id="d6" onchange="tick('d6')"><span class="item-label">Melatonin / sleep gummies</span></label>
+        <label class="item-row green" id="row-d7"><input type="checkbox" id="d7" onchange="tick('d7')"><span class="item-label">Pillow spray</span></label>
+        <label class="item-row green" id="row-d8"><input type="checkbox" id="d8" onchange="tick('d8')"><span class="item-label">Vicks</span></label>
+        <label class="item-row green" id="row-d9"><input type="checkbox" id="d9" onchange="tick('d9')"><span class="item-label">Night lotion</span></label>
+        <label class="item-row green" id="row-d10"><input type="checkbox" id="d10" onchange="tick('d10')"><span class="item-label">Lip balm</span></label>
+      </div>
+    </div>
+
+    <div class="category">
+      <div class="cat-header"><div><div class="cat-title">🪥 Toiletry Bag</div><div class="cat-note">Use tonight → throw into Away suitcase Monday AM before leaving</div></div><div class="cat-done" id="catdone-d3"></div></div>
+      <div class="cat-items">
+        <label class="item-row green" id="row-d11"><input type="checkbox" id="d11" onchange="tick('d11')"><span class="item-label">Full toiletry bag (all products — see Suitcase tab for full list)</span></label>
+        <label class="item-row green" id="row-d12"><input type="checkbox" id="d12" onchange="tick('d12')"><span class="item-label">Toothbrush &amp; toothpaste</span></label>
+        <label class="item-row green" id="row-d13"><input type="checkbox" id="d13" onchange="tick('d13')"><span class="item-label">Evening skincare</span></label>
+        <label class="item-row green" id="row-d14"><input type="checkbox" id="d14" onchange="tick('d14')"><span class="item-label">Any medications needed tonight</span></label>
+      </div>
+    </div>
+
+    <div class="category">
+      <div class="cat-header"><div><div class="cat-title">🌅 Monday AM — Transfer &amp; Go</div><div class="cat-note">Pack these in duffle tonight. Monday: put on travel outfit, throw toiletries + sleep items into Away, then go.</div></div><div class="cat-done" id="catdone-d4"></div></div>
+      <div class="cat-items">
+        <label class="item-row green" id="row-d15"><input type="checkbox" id="d15" onchange="tick('d15')"><span class="item-label">Monday travel outfit packed in here: biker shorts #1, hoodie, sports bra, underwear, socks</span></label>
+        <label class="item-row green" id="row-d16"><input type="checkbox" id="d16" onchange="tick('d16')"><span class="item-label">Comfort sweatshirt (→ Away sleep cube in AM)</span></label>
+        <label class="item-row green" id="row-d17"><input type="checkbox" id="d17" onchange="tick('d17')"><span class="item-label">⚠️ Phone charger — don't leave it at grandma's!</span></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== BACKPACK ===================== -->
+  <div class="section" id="section-backpack">
+    <div class="bag-header blue-bg">
+      <div style="display:flex;justify-content:space-between">
+        <div>
+          <h2>🔵 Lululemon Everywhere 22L</h2>
+          <p>Carry-on personal item + your purse for the whole trip</p>
+          <p style="margin-top:4px;font-size:11px;color:#64748b">Comes INSIDE grandma's tonight to charge everything</p>
+        </div>
+        <span id="done-backpack" style="display:none" class="all-done-badge">✅</span>
+      </div>
+      <div class="bag-prog">
+        <div class="bag-prog-label"><span id="lbl-backpack">0 / 0 items</span><span id="pct-backpack">0%</span></div>
+        <div class="bag-prog-track"><div class="bag-prog-fill blue-fill" id="fill-backpack" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="category">
+      <div class="cat-header"><div><div class="cat-title">💻 Tech</div></div><div class="cat-done" id="catdone-b1"></div></div>
+      <div class="cat-items">
+        <label class="item-row" id="row-b1"><input type="checkbox" id="b1" onchange="tick('b1')"><span class="item-label">Work laptop</span></label>
+        <label class="item-row" id="row-b2"><input type="checkbox" id="b2" onchange="tick('b2')"><span class="item-label">Laptop charger</span></label>
+        <label class="item-row" id="row-b3"><input type="checkbox" id="b3" onchange="tick('b3')"><span class="item-label">iPad</span></label>
+        <label class="item-row" id="row-b4"><input type="checkbox" id="b4" onchange="tick('b4')"><span class="item-label">iPad charger / cable</span></label>
+        <label class="item-row" id="row-b5"><input type="checkbox" id="b5" onchange="tick('b5')"><span class="item-label">Phone charging cable</span></label>
+        <label class="item-row" id="row-b6"><input type="checkbox" id="b6" onchange="tick('b6')"><span class="item-label">Portable charger / power bank</span></label>
+        <label class="item-row" id="row-b7"><input type="checkbox" id="b7" onchange="tick('b7')"><span class="item-label">Mouse</span></label>
+        <label class="item-row" id="row-b8"><input type="checkbox" id="b8" onchange="tick('b8')"><span class="item-label">Mousepad</span></label>
+        <label class="item-row" id="row-b9"><input type="checkbox" id="b9" onchange="tick('b9')"><span class="item-label">Over-ear headphones</span></label>
+        <label class="item-row" id="row-b10"><input type="checkbox" id="b10" onchange="tick('b10')"><span class="item-label">AirPods + case</span></label>
+        <label class="item-row" id="row-b11"><input type="checkbox" id="b11" onchange="tick('b11')"><span class="item-label">Any dongles or adapters for work</span></label>
+      </div>
+    </div>
+
+    <div class="category">
+      <div class="cat-header"><div><div class="cat-title">🪪 Travel Documents &amp; Wallet</div><div class="cat-note">Empty your purse tonight and move everything here</div></div><div class="cat-done" id="catdone-b2"></div></div>
+      <div class="cat-items">
+        <label class="item-row" id="row-b12"><input type="checkbox" id="b12" onchange="tick('b12')"><span class="item-label">Photo ID / driver's license</span></label>
+        <label class="item-row" id="row-b13"><input type="checkbox" id="b13" onchange="tick('b13')"><span class="item-label">Boarding passes — screenshot BOTH legs (WN407 + WN1790)!</span></label>
+        <label class="item-row" id="row-b14"><input type="checkbox" id="b14" onchange="tick('b14')"><span class="item-label">Wallet, credit cards &amp; cash (transferred from purse)</span></label>
+        <label class="item-row" id="row-b15"><input type="checkbox" id="b15" onchange="tick('b15')"><span class="item-label">Car keys (parked at grandma's)</span></label>
+        <label class="item-row" id="row-b16"><input type="checkbox" id="b16" onchange="tick('b16')"><span class="item-label">Any other daily purse essentials</span></label>
+      </div>
+    </div>
+
+    <div class="category">
+      <div class="cat-header"><div><div class="cat-title">✈️ Plane Comfort</div></div><div class="cat-done" id="catdone-b3"></div></div>
+      <div class="cat-items">
+        <label class="item-row" id="row-b17"><input type="checkbox" id="b17" onchange="tick('b17')"><span class="item-label">Reusable water bottle (empty through security, fill after)</span></label>
+        <label class="item-row" id="row-b18"><input type="checkbox" id="b18" onchange="tick('b18')"><span class="item-label">Snacks</span></label>
+        <label class="item-row" id="row-b19"><input type="checkbox" id="b19" onchange="tick('b19')"><span class="item-label">Lip balm</span></label>
+        <label class="item-row" id="row-b20"><input type="checkbox" id="b20" onchange="tick('b20')"><span class="item-label">Hand lotion (travel size)</span></label>
+        <label class="item-row" id="row-b21"><input type="checkbox" id="b21" onchange="tick('b21')"><span class="item-label">Gum / mints</span></label>
+        <label class="item-row" id="row-b22"><input type="checkbox" id="b22" onchange="tick('b22')"><span class="item-label">Hair tie / claw clip</span></label>
+      </div>
+    </div>
+
+    <div class="category">
+      <div class="cat-header"><div><div class="cat-title">🧶 Crochet (Carry-On)</div><div class="cat-note">Hooks are TSA-approved. Keep scissors under 4" blade!</div></div><div class="cat-done" id="catdone-b4"></div></div>
+      <div class="cat-items">
+        <label class="item-row" id="row-b23"><input type="checkbox" id="b23" onchange="tick('b23')"><span class="item-label">Hat WIP (with yarn attached)</span></label>
+        <label class="item-row" id="row-b24"><input type="checkbox" id="b24" onchange="tick('b24')"><span class="item-label">2–3 balls for keychains</span></label>
+        <label class="item-row" id="row-b25"><input type="checkbox" id="b25" onchange="tick('b25')"><span class="item-label">Hook: 3.5–4mm</span></label>
+        <label class="item-row" id="row-b26"><input type="checkbox" id="b26" onchange="tick('b26')"><span class="item-label">Small scissors (under 4" blade for TSA)</span></label>
+        <label class="item-row" id="row-b27"><input type="checkbox" id="b27" onchange="tick('b27')"><span class="item-label">Stitch markers</span></label>
+        <label class="item-row" id="row-b28"><input type="checkbox" id="b28" onchange="tick('b28')"><span class="item-label">Tapestry / yarn needle</span></label>
+        <label class="item-row" id="row-b29"><input type="checkbox" id="b29" onchange="tick('b29')"><span class="item-label">Pattern (screenshot it — have it offline!)</span></label>
+      </div>
+    </div>
+
+    <div class="category">
+      <div class="cat-header"><div><div class="cat-title">⚠️ Do Not Skip These</div><div class="cat-note">These live in the backpack so they can't accidentally get checked</div></div><div class="cat-done" id="catdone-b5"></div></div>
+      <div class="cat-items">
+        <label class="item-row" id="row-b30"><input type="checkbox" id="b30" onchange="tick('b30')"><span class="item-label">MOLESKIN — for the slides (you know what happened last time)</span></label>
+        <label class="item-row" id="row-b31"><input type="checkbox" id="b31" onchange="tick('b31')"><span class="item-label">1x underwear (emergency if checked bag is delayed)</span></label>
+        <label class="item-row" id="row-b32"><input type="checkbox" id="b32" onchange="tick('b32')"><span class="item-label">1x sports bra (emergency if checked bag is delayed)</span></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== SUITCASE ===================== -->
+  <div class="section" id="section-suitcase">
+    <div class="bag-header purple-bg">
+      <div style="display:flex;justify-content:space-between">
+        <div>
+          <h2>🟣 Away Medium Flex</h2>
+          <p>Checked bag — organized by packing cube</p>
+          <p style="margin-top:4px;font-size:11px;color:#64748b">Stays in the car tonight. Monday AM: throw in toiletries + sleep items from duffle.</p>
+        </div>
+        <span id="done-suitcase" style="display:none" class="all-done-badge">✅</span>
+      </div>
+      <div class="bag-prog">
+        <div class="bag-prog-label"><span id="lbl-suitcase">0 / 0 items</span><span id="pct-suitcase">0%</span></div>
+        <div class="bag-prog-track"><div class="bag-prog-fill purple-fill" id="fill-suitcase" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="category">
+      <div class="cat-header"><div><div class="cat-title">🧳 Cube 1 — Tuesday Outfit</div><div class="cat-note">Work day. Biker shorts = comfy laptop day.</div></div><div class="cat-done" id="catdone-s1"></div></div>
+      <div class="cat-items">
+        <label class="item-row purple" id="row-s1"><input type="checkbox" id="s1" onchange="tick('s1')"><span class="item-label">Fitted tee #1</span></label>
+        <label class="item-row purple" id="row-s2"><input type="checkbox" id="s2" onchange="tick('s2')"><span class="item-label">Biker shorts #2</span></label>
+        <label class="item-row purple" id="row-s3"><input type="checkbox" id="s3" onchange="tick('s3')"><span class="item-label">Sports bra</span></label>
+        <label class="item-row purple" id="row-s4"><input type="checkbox" id="s4" onchange="tick('s4')"><span class="item-label">Underwear</span></label>
+      </div>
+    </div>
+
+    <div class="category">
+      <div class="cat-header"><div><div class="cat-title">🧳 Cube 2 — Wednesday Outfit</div><div class="cat-note">Green matching set — zero decisions required.</div></div><div class="cat-done" id="catdone-s2"></div></div>
+      <div class="cat-items">
+        <label class="item-row purple" id="row-s5"><input type="checkbox" id="s5" onchange="tick('s5')"><span class="item-label">Green matching set top</span></label>
+        <label class="item-row purple" id="row-s6"><input type="checkbox" id="s6" onchange="tick('s6')"><span class="item-label">Green matching set bottom</span></label>
+        <label class="item-row purple" id="row-s7"><input type="checkbox" id="s7" onchange="tick('s7')"><span class="item-label">Sports bra</span></label>
+        <label class="item-row purple" id="row-s8"><input type="checkbox" id="s8" onchange="tick('s8')"><span class="item-label">Underwear</span></label>
+      </div>
+    </div>
+
+    <div class="category">
+      <div class="cat-header"><div><div class="cat-title">🧳 Cube 3 — Thursday Outfit</div><div class="cat-note">Last full day. Lay Friday outfit out tonight before bed!</div></div><div class="cat-done" id="catdone-s3"></div></div>
+      <div class="cat-items">
+        <label class="item-row purple" id="row-s9"><input type="checkbox" id="s9" onchange="tick('s9')"><span class="item-label">Fitted tee #2</span></label>
+        <label class="item-row purple" id="row-s10"><input type="checkbox" id="s10" onchange="tick('s10')"><span class="item-label">Biker shorts #3</span></label>
+        <label class="item-row purple" id="row-s11"><input type="checkbox" id="s11" onchange="tick('s11')"><span class="item-label">Sports bra</span></label>
+        <label class="item-row purple" id="row-s12"><input type="checkbox" id="s12" onchange="tick('s12')"><span class="item-label">Underwear</span></label>
+      </div>
+    </div>
+
+    <div class="category">
+      <div class="cat-header"><div><div class="cat-title">🎒 Backup Outfits Cube</div><div class="cat-note">Wildcard options — use any day you want a vibe change.</div></div><div class="cat-done" id="catdone-s4"></div></div>
+      <div class="cat-items">
+        <label class="item-row purple" id="row-s13"><input type="checkbox" id="s13" onchange="tick('s13')"><span class="item-label">Cute romper + regular bra (your one nice outfit — save it!)</span></label>
+        <label class="item-row purple" id="row-s14"><input type="checkbox" id="s14" onchange="tick('s14')"><span class="item-label">Black athletic dress (no extra underwear needed)</span></label>
+        <label class="item-row purple" id="row-s15"><input type="checkbox" id="s15" onchange="tick('s15')"><span class="item-label">Black flowy athletic shorts + tank (tank acts as bra)</span></label>
+        <label class="item-row purple" id="row-s16"><input type="checkbox" id="s16" onchange="tick('s16')"><span class="item-label">Fitted tee #3 (alt top with flowy shorts)</span></label>
+        <label class="item-row purple" id="row-s17"><input type="checkbox" id="s17" onchange="tick('s17')"><span class="item-label">Extra sports bra (for flowy shorts + tee combo)</span></label>
+        <label class="item-row purple" id="row-s18"><input type="checkbox" id="s18" onchange="tick('s18')"><span class="item-label">Extra pair of socks (just in case)</span></label>
+      </div>
+    </div>
+
+    <div class="category">
+      <div class="cat-header"><div><div class="cat-title">🩱 Swim Cube</div><div class="cat-note">All swim stuff together — grab and go for beach days.</div></div><div class="cat-done" id="catdone-s5"></div></div>
+      <div class="cat-items">
+        <label class="item-row purple" id="row-s19"><input type="checkbox" id="s19" onchange="tick('s19')"><span class="item-label">Bikini #1 (top + bottom)</span></label>
+        <label class="item-row purple" id="row-s20"><input type="checkbox" id="s20" onchange="tick('s20')"><span class="item-label">Bikini #2 (top + bottom)</span></label>
+        <label class="item-row purple" id="row-s21"><input type="checkbox" id="s21" onchange="tick('s21')"><span class="item-label">Long sleeve zip-up one piece (boogie boarding!)</span></label>
+        <label class="item-row purple" id="row-s22"><input type="checkbox" id="s22" onchange="tick('s22')"><span class="item-label">Giant button down shirt (swim cover up)</span></label>
+      </div>
+    </div>
+
+    <div class="category">
+      <div class="cat-header"><div><div class="cat-title">😴 Sleep / Comfort Cube</div><div class="cat-note">"Grab from duffle AM" items = used at grandma's tonight, transferred Monday morning.</div></div><div class="cat-done" id="catdone-s6"></div></div>
+      <div class="cat-items">
+        <label class="item-row purple" id="row-s23"><input type="checkbox" id="s23" onchange="tick('s23')"><span class="item-label">Sleep tshirt #2 (FL only — separate from grandma's one)</span></label>
+        <label class="item-row purple" id="row-s24"><input type="checkbox" id="s24" onchange="tick('s24')"><span class="item-label">Sleep shorts</span></label>
+        <label class="item-row purple" id="row-s25"><input type="checkbox" id="s25" onchange="tick('s25')"><span class="item-label">Comfort sweatshirt (grab from duffle AM)</span></label>
+        <label class="item-row purple" id="row-s26"><input type="checkbox" id="s26" onchange="tick('s26')"><span class="item-label">Melatonin / sleep gummies (grab from duffle AM)</span></label>
+        <label class="item-row purple" id="row-s27"><input type="checkbox" id="s27" onchange="tick('s27')"><span class="item-label">Pillow spray (grab from duffle AM)</span></label>
+        <label class="item-row purple" id="row-s28"><input type="checkbox" id="s28" onchange="tick('s28')"><span class="item-label">Vicks (grab from duffle AM)</span></label>
+        <label class="item-row purple" id="row-s29"><input type="checkbox" id="s29" onchange="tick('s29')"><span class="item-label">Night lotion (grab from duffle AM)</span></label>
+        <label class="item-row purple" id="row-s30"><input type="checkbox" id="s30" onchange="tick('s30')"><span class="item-label">Lip balm (grab from duffle AM)</span></label>
+      </div>
+    </div>
+
+    <div class="category">
+      <div class="cat-header"><div><div class="cat-title">👟 Shoes (outside cubes)</div><div class="cat-note">Tennis shoes are worn both travel days — don't pack them!</div></div><div class="cat-done" id="catdone-s7"></div></div>
+      <div class="cat-items">
+        <label class="item-row purple" id="row-s31"><input type="checkbox" id="s31" onchange="tick('s31')"><span class="item-label">Flip flops</span></label>
+        <label class="item-row purple" id="row-s32"><input type="checkbox" id="s32" onchange="tick('s32')"><span class="item-label">Slides (moleskin is in your backpack!)</span></label>
+      </div>
+    </div>
+
+    <div class="category">
+      <div class="cat-header"><div><div class="cat-title">💇 Hair</div></div><div class="cat-done" id="catdone-s8"></div></div>
+      <div class="cat-items">
+        <label class="item-row purple" id="row-s33"><input type="checkbox" id="s33" onchange="tick('s33')"><span class="item-label">Shampoo</span></label>
+        <label class="item-row purple" id="row-s34"><input type="checkbox" id="s34" onchange="tick('s34')"><span class="item-label">Conditioner</span></label>
+        <label class="item-row purple" id="row-s35"><input type="checkbox" id="s35" onchange="tick('s35')"><span class="item-label">Leave-in conditioner</span></label>
+        <label class="item-row purple" id="row-s36"><input type="checkbox" id="s36" onchange="tick('s36')"><span class="item-label">Air dry cream</span></label>
+        <label class="item-row purple" id="row-s37"><input type="checkbox" id="s37" onchange="tick('s37')"><span class="item-label">Shower cap</span></label>
+        <label class="item-row purple" id="row-s38"><input type="checkbox" id="s38" onchange="tick('s38')"><span class="item-label">Hair towel</span></label>
+        <label class="item-row purple" id="row-s39"><input type="checkbox" id="s39" onchange="tick('s39')"><span class="item-label">Extra hair ties / clips</span></label>
+      </div>
+    </div>
+
+    <div class="category">
+      <div class="cat-header"><div><div class="cat-title">🧴 Body &amp; Skincare</div></div><div class="cat-done" id="catdone-s9"></div></div>
+      <div class="cat-items">
+        <label class="item-row purple" id="row-s40"><input type="checkbox" id="s40" onchange="tick('s40')"><span class="item-label">Body wash / soap</span></label>
+        <label class="item-row purple" id="row-s41"><input type="checkbox" id="s41" onchange="tick('s41')"><span class="item-label">Deodorant</span></label>
+        <label class="item-row purple" id="row-s42"><input type="checkbox" id="s42" onchange="tick('s42')"><span class="item-label">Razor + shaving cream or gel</span></label>
+        <label class="item-row purple" id="row-s43"><input type="checkbox" id="s43" onchange="tick('s43')"><span class="item-label">Body lotion</span></label>
+        <label class="item-row purple" id="row-s44"><input type="checkbox" id="s44" onchange="tick('s44')"><span class="item-label">Face wash</span></label>
+        <label class="item-row purple" id="row-s45"><input type="checkbox" id="s45" onchange="tick('s45')"><span class="item-label">Moisturizer / SPF face</span></label>
+        <label class="item-row purple" id="row-s46"><input type="checkbox" id="s46" onchange="tick('s46')"><span class="item-label">Any other skincare routine items</span></label>
+        <label class="item-row purple" id="row-s47"><input type="checkbox" id="s47" onchange="tick('s47')"><span class="item-label">Makeup bag (if applicable)</span></label>
+      </div>
+    </div>
+
+    <div class="category">
+      <div class="cat-header"><div><div class="cat-title">☀️ Sun &amp; Beach — Do Not Skip</div><div class="cat-note">Port St. Joe sun in late March is serious. Don't learn this on day one.</div></div><div class="cat-done" id="catdone-s10"></div></div>
+      <div class="cat-items">
+        <label class="item-row purple" id="row-s48"><input type="checkbox" id="s48" onchange="tick('s48')"><span class="item-label">Sunscreen — body (go generous, go often)</span></label>
+        <label class="item-row purple" id="row-s49"><input type="checkbox" id="s49" onchange="tick('s49')"><span class="item-label">SPF lip balm</span></label>
+        <label class="item-row purple" id="row-s50"><input type="checkbox" id="s50" onchange="tick('s50')"><span class="item-label">After-sun / aloe vera</span></label>
+      </div>
+    </div>
+
+    <div class="category">
+      <div class="cat-header"><div><div class="cat-title">🎒 Extras</div></div><div class="cat-done" id="catdone-s11"></div></div>
+      <div class="cat-items">
+        <label class="item-row purple" id="row-s51"><input type="checkbox" id="s51" onchange="tick('s51')"><span class="item-label">Shawl</span></label>
+        <label class="item-row purple" id="row-s52"><input type="checkbox" id="s52" onchange="tick('s52')"><span class="item-label">Heating pad + cord</span></label>
+        <label class="item-row purple" id="row-s53"><input type="checkbox" id="s53" onchange="tick('s53')"><span class="item-label">Bananagrams</span></label>
+        <label class="item-row purple" id="row-s54"><input type="checkbox" id="s54" onchange="tick('s54')"><span class="item-label">Deck of cards</span></label>
+      </div>
+    </div>
+
+    <div class="category">
+      <div class="cat-header"><div><div class="cat-title">🧶 Crochet (Checked)</div><div class="cat-note">Pack WIP in a project bag to keep it tangle-free.</div></div><div class="cat-done" id="catdone-s12"></div></div>
+      <div class="cat-items">
+        <label class="item-row purple" id="row-s55"><input type="checkbox" id="s55" onchange="tick('s55')"><span class="item-label">Bag WIP (inside a project bag)</span></label>
+        <label class="item-row purple" id="row-s56"><input type="checkbox" id="s56" onchange="tick('s56')"><span class="item-label">Hook: 4.5–5.5mm (for bag WIP)</span></label>
+        <label class="item-row purple" id="row-s57"><input type="checkbox" id="s57" onchange="tick('s57')"><span class="item-label">Any extra yarn for the bag project</span></label>
+      </div>
+    </div>
+
+    <div class="category">
+      <div class="cat-header"><div><div class="cat-title">👜 Purse &amp; Misc</div><div class="cat-note">Backpack is your purse for the trip — pack this flat.</div></div><div class="cat-done" id="catdone-s13"></div></div>
+      <div class="cat-items">
+        <label class="item-row purple" id="row-s58"><input type="checkbox" id="s58" onchange="tick('s58')"><span class="item-label">Your purse (emptied out, packed flat)</span></label>
+        <label class="item-row purple" id="row-s59"><input type="checkbox" id="s59" onchange="tick('s59')"><span class="item-label">Any daily medications / vitamins</span></label>
+        <label class="item-row purple" id="row-s60"><input type="checkbox" id="s60" onchange="tick('s60')"><span class="item-label">Feminine hygiene products (just in case)</span></label>
+      </div>
+    </div>
+
+  </div><!-- end suitcase -->
+</div><!-- end content -->
+
+<script>
+const STORAGE_KEY = 'psj-packing-2026';
+
+// All item IDs grouped by bag and category for progress tracking
+const groups = {
+  monday: ['mo1','mo2','mo3','mo4','mo5','mo6','mo7'],
+  friday: ['fr1','fr2','fr3','fr4','fr5','fr6','fr7'],
+  duffle: {
+    'd1': ['d1','d2','d3','d4','d5'],
+    'd2': ['d6','d7','d8','d9','d10'],
+    'd3': ['d11','d12','d13','d14'],
+    'd4': ['d15','d16','d17'],
+  },
+  backpack: {
+    'b1': ['b1','b2','b3','b4','b5','b6','b7','b8','b9','b10','b11'],
+    'b2': ['b12','b13','b14','b15','b16'],
+    'b3': ['b17','b18','b19','b20','b21','b22'],
+    'b4': ['b23','b24','b25','b26','b27','b28','b29'],
+    'b5': ['b30','b31','b32'],
+  },
+  suitcase: {
+    's1': ['s1','s2','s3','s4'],
+    's2': ['s5','s6','s7','s8'],
+    's3': ['s9','s10','s11','s12'],
+    's4': ['s13','s14','s15','s16','s17','s18'],
+    's5': ['s19','s20','s21','s22'],
+    's6': ['s23','s24','s25','s26','s27','s28','s29','s30'],
+    's7': ['s31','s32'],
+    's8': ['s33','s34','s35','s36','s37','s38','s39'],
+    's9': ['s40','s41','s42','s43','s44','s45','s46','s47'],
+    's10': ['s48','s49','s50'],
+    's11': ['s51','s52','s53','s54'],
+    's12': ['s55','s56','s57'],
+    's13': ['s58','s59','s60'],
+  }
+};
+
+let state = {};
+
+function load() {
+  try { state = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) { state = {}; }
+  Object.keys(state).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.checked = true;
+      const row = document.getElementById('row-' + id);
+      if (row) row.classList.add('checked');
+    }
+  });
+  updateAll();
+}
+
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+function tick(id) {
+  const el = document.getElementById(id);
+  const row = document.getElementById('row-' + id);
+  if (el.checked) {
+    state[id] = true;
+    if (row) row.classList.add('checked');
+  } else {
+    delete state[id];
+    if (row) row.classList.remove('checked');
+  }
+  save();
+  updateAll();
+}
+
+function countIds(ids) {
+  return { total: ids.length, done: ids.filter(id => !!state[id]).length };
+}
+
+function setBar(fillId, lblId, pctId, done, total) {
+  const pct = total ? Math.round(done/total*100) : 0;
+  const fill = document.getElementById(fillId);
+  const lbl = document.getElementById(lblId);
+  const pctEl = document.getElementById(pctId);
+  if (fill) fill.style.width = pct + '%';
+  if (lbl) lbl.textContent = done + '/' + total;
+  if (pctEl) pctEl.textContent = pct + '%';
+}
+
+function updateAll() {
+  // Outfits
+  ['monday','friday'].forEach(key => {
+    const {done, total} = countIds(groups[key]);
+    setBar('fill-'+key, 'lbl-'+key, 'pct-'+key, done, total);
+    const badge = document.getElementById('done-'+key);
+    if (badge) badge.style.display = done === total ? 'inline' : 'none';
+    const card = document.getElementById('outfit-'+key);
+    if (card) card.classList.toggle('done', done === total);
+  });
+
+  // Bags
+  ['duffle','backpack','suitcase'].forEach(bag => {
+    const cats = groups[bag];
+    let bagDone = 0, bagTotal = 0;
+    Object.entries(cats).forEach(([catKey, ids]) => {
+      const {done, total} = countIds(ids);
+      bagDone += done; bagTotal += total;
+      const catEl = document.getElementById('catdone-' + catKey);
+      if (catEl) catEl.textContent = done === total && total > 0 ? '✓ Done' : '';
+    });
+    setBar('fill-'+bag, 'lbl-'+bag, 'pct-'+bag, bagDone, bagTotal);
+    const badge = document.getElementById('done-'+bag);
+    if (badge) badge.style.display = bagDone === bagTotal && bagTotal > 0 ? 'inline' : 'none';
+    // Tab done dot
+    const tabEl = document.getElementById('tab-'+bag);
+    if (tabEl) {
+      let dot = tabEl.querySelector('.done-dot');
+      if (bagDone === bagTotal && bagTotal > 0) {
+        if (!dot) { dot = document.createElement('span'); dot.className = 'done-dot'; dot.textContent = '✓'; tabEl.appendChild(dot); }
+      } else { if (dot) dot.remove(); }
+    }
+  });
+
+  // Overall
+  const allIds = [
+    ...groups.monday, ...groups.friday,
+    ...Object.values(groups.duffle).flat(),
+    ...Object.values(groups.backpack).flat(),
+    ...Object.values(groups.suitcase).flat(),
+  ];
+  const {done, total} = countIds(allIds);
+  const pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById('overall-fill').style.width = pct + '%';
+  document.getElementById('overall-label').textContent = done + ' / ' + total + ' packed';
+
+  // Outfits tab dot
+  const outfitsDone = countIds([...groups.monday,...groups.friday]);
+  const tabOutfits = document.getElementById('tab-outfits');
+  let odot = tabOutfits.querySelector('.done-dot');
+  if (outfitsDone.done === outfitsDone.total && outfitsDone.total > 0) {
+    if (!odot) { odot = document.createElement('span'); odot.className = 'done-dot'; odot.textContent = '✓'; tabOutfits.appendChild(odot); }
+  } else { if (odot) odot.remove(); }
+}
+
+function showTab(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('section-' + name).classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function resetAll() {
+  if (!confirm('Reset all checkboxes? This cannot be undone.')) return;
+  state = {};
+  save();
+  document.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
+  document.querySelectorAll('.item-row').forEach(r => r.classList.remove('checked'));
+  updateAll();
+}
+
+load();
+</script>
+</body>
+</html>
